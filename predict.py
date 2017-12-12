@@ -24,15 +24,17 @@ def get_data(sub_folders):
 
 
 def get_classifier(X_train, Y_train, k=3):
-    knn = KNN(3)
+    knn = KNN(5)
     knn.fit(X_train, Y_train)
     return knn
 
 
 def get_data_():
     # get data
-    X, Y = get_data(['Orange', 'Green'])
-    Y_ = Y == 'Green'
+    X, Y = get_data(['Orange', 'Green', 'White'])
+    Y_ = np.zeros(Y.shape)
+    Y_[Y == 'Green'] = 1
+    Y_[Y == 'White'] = 2
     Y_ = Y_.astype('float32')
 
     # shuffle data
@@ -52,7 +54,7 @@ def run(img):
     X, Y_ = get_data_()
 
     # get classifier
-    knn = get_classifier(X, Y_)
+    knn = get_classifier(X, Y_, k=5)
 
     # get image
     img = cv2.resize(img, (400, 250))
@@ -60,24 +62,16 @@ def run(img):
 
     # predict
     pred = knn.predict(np.array([img]))
-    return 'Orange' if pred == 0 else 'Green'
+    if pred == 0: return 'Orange'
+    elif pred == 1: return 'Green'
+    return 'White'
 
 
 def check_run():
-    # get data
-    X, Y = get_data(['Orange', 'Green'])
-    Y_ = Y == 'Green'
-    Y_ = Y_.astype('float32')
-
-    # shuffle data
-    all_data = np.zeros((X.shape[0], X.shape[1] + 1))
-    all_data[:, :-1] = X
-    all_data[:, -1] = Y_
-    np.random.shuffle(all_data)
 
     # split into train and test
-    X, Y_ = all_data[:, :-1], all_data[:, -1]
-    split = int(0.9 * all_data.shape[0])
+    X, Y_ = get_data_()
+    split = int(0.9 * X.shape[0])
     X_train, X_test = X[:split, :], X[split:, :]
     Y_train, Y_test = Y_[:split], Y_[split:]
     
